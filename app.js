@@ -77,7 +77,7 @@ app.post('/api/ideia', bodyParser.json(), function(req, res, next){
 });
 
 app.get('/api/karma/:id/:bit', function(req, res, next){
-    var voter = new Date().toString(); //(req.headers['x-forwarded-for'] || req.connection.remoteAddress) + req.params.id;
+    var voter = (req.headers['x-forwarded-for'] || req.connection.remoteAddress) + req.params.id;
 
     if(votes.indexOf(voter) !== -1)
         return res.send(403);
