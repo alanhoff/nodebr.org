@@ -1,0 +1,19 @@
+{
+  "name": "nodebr",
+  "version": "0.0.0",
+  "description": "Site da comunidade NodeBR",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.0.2",
+    "express": "^4.1.1",
+    "level": "^0.18.0",
+    "puid": "^0.5.4",
+    "sockjs": "^0.3.8",
+    "validator": "^3.11.2"
+  }
+}

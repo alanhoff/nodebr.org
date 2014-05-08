@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Ideias para o NodeBR</title>
+
+        <!-- Bootstrap -->
+        <link href="//cdn.jsdelivr.net/bootstrap/3.1/css/bootstrap.min.css" rel="stylesheet">
+        <link href="//cdn.jsdelivr.net/bootstrap/3.1/css/bootstrap-theme.min.css" rel="stylesheet">
+        <style type="text/css">
+            body {
+                padding-top: 70px;
+            }
+        </style>
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+        <![endif]-->
+    </head>
+    <body>
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <a class="navbar-brand" href="#">NodeBR</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="jumbotron" ng-controller="jumboCtrl">
+                <h1>Agregador de ideias</h1>
+                <p>Juntos vamos construir o portal da comunidade NodeBR. Todos gostariam de ler a ideia, função, característica, etc, que você acha importante que esse novo portal tenha!</p>
+                <p>No final do período de seleção, as melhores ideias serão fixadas no GitHub da comunidade para serem implementadas por nós mesmos, não perca tempo!</p>
+                <p>
+                    <a class="btn btn-lg btn-primary" href="#" ng-click="openModal()" srole="button">Adicionar uma ideia &raquo;</a>
+                </p>
+            </div>
+            <div ng-controller="ideiasCtrl">
+                <div class="panel panel-default" ng-repeat="ideia in ideias">
+                    <div class="panel-heading">
+                        <strong>{{ideia.karma}}</strong>
+                        <button type="button" class="btn btn-success btn-xs" ng-click="vote(ideia.id, 1)">
+                            <span class="glyphicon glyphicon-thumbs-up"></span> Gostei
+                        </button>
+                        <button type="button" class="btn btn-danger btn-xs" ng-click="vote(ideia.id, 0)">
+                            <span class="glyphicon glyphicon-thumbs-down"></span> Não
+                        </button>
+                        <strong style="margin-left: 10px">{{ideia.titulo}}</strong>
+                    </div>
+                    <div class="panel-body">
+                        {{ideia.descricao}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="myModal" tabindex="-1" role="dialog" ng-controller="inserirCtrl" aria-labelledby="myModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                        <h4 class="modal-title">Inserir nova ideia</h4>
+                    </div>
+                    <div class="modal-body">
+                        <form role="form">
+                            <div class="form-group">
+                                <label for="exampleInputEmail1">Título</label>
+                                <input type="text" class="form-control" ng-model="ideia.titulo">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputPassword1">Seu nome</label>
+                                <input type="text" class="form-control" ng-model="ideia.autor">
+                            </div>
+                            <div class="form-group">
+                                <label for="exampleInputPassword1">Descrição da sua ideia</label>
+                                <textarea class="form-control" ng-model="ideia.descricao" placeholder="Markdown habilitado" rows="10"></textarea>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-primary" ng-click="doInsert()">Inserir</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="//cdn.sockjs.org/sockjs-0.3.min.js"></script>
+        <script src="//cdn.jsdelivr.net/g/jquery@2.1,angularjs@1.2,bootstrap@3.1(js/bootstrap.min.js)"></script>
+        <script type="text/javascript">
+            var app = angular.module('nodebr', []);
+
+            app.controller('ideiasCtrl', function($scope, $http){
+                $scope.ideias = [];
+
+                $scope.load = function(){
+                    $http.get('/api/ideia').then(function(res){
+                        $scope.ideias = res.data;
+                    });
+                };
+
+                $scope.vote = function(id, bit){
+                    $http.get('/api/karma/' + id + '/' + bit).then(function(res){
+                        $scope.load();
+                    });
+                };
+
+                $scope.$on('update', function(){
+                    $scope.load();
+                });
+
+                $scope.load();
+            });
+
+            app.controller('inserirCtrl', function($scope, $http){
+                $scope.ideia = {};
+
+                $scope.doInsert = function(){
+                    $http.post('/api/ideia', $scope.ideia).then(function(){
+                        alert('Ideia inserida com sucesso.');
+                        $('#myModal').modal('hide');
+                    }, function(res){
+                        if(res.data && res.status === 400)
+                            alert(res.data[0]);
+                        else
+                            alert('Ocorreu um erro desconhecido.');
+                    });
+                };
+            });
+
+            app.controller('jumboCtrl', function($scope){
+                $scope.openModal = function(){
+                    $('#myModal').modal('show');
+                };
+            });
+
+             var socket = new SockJS('/update');
+             socket.onmessage = function(e) {
+                 angular.element(document).scope().$broadcast('update');
+             };
+
+            angular.bootstrap(document, ['nodebr']);
+        </script>
+    </body>
+</html>
