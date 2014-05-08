@@ -38,7 +38,7 @@
                 </p>
             </div>
             <div ng-controller="ideiasCtrl">
-                <div class="panel panel-default" ng-repeat="ideia in ideias">
+                <div class="panel panel-default" ng-repeat="ideia in ideias | orderBy: '-karma'">
                     <div class="panel-heading">
                         <strong>{{ideia.karma}}</strong>
                         <button type="button" class="btn btn-success btn-xs" ng-click="vote(ideia.id, 1)">
